@@ -1,10 +1,11 @@
+--query 1
 SELECT city, COUNT(*) AS active_missions
 FROM missions
 WHERE EXTRACT(YEAR FROM mission_date) = :year
 GROUP BY city;
 
 
-
+--query 2
 SELECT country, AVG(bomb_damage_assessment) AS average_damage
 FROM missions
 WHERE aircraft_count > 5
