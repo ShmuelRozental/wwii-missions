@@ -66,6 +66,17 @@ def insert_normalized_data(denormalized_data):
         connection.commit()
         print("Data normalized and inserted successfully!")
 
+        cursor.execute("""
+                       ALTER TABLE mission
+                           DROP COLUMN IF EXISTS target_country,
+                           DROP COLUMN IF EXISTS target_city,
+                           DROP COLUMN IF EXISTS target_latitude,
+                           DROP COLUMN IF EXISTS target_longitude, 
+                           DROP COLUMN IF EXISTS target_type,
+                           DROP COLUMN IF EXISTS target_industry,
+                           DROP COLUMN IF EXISTS target_priority;
+                   """)
+
     except Exception as e:
         print(f"An error occurred while inserting normalized data: {e}")
         connection.rollback()
