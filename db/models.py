@@ -24,3 +24,5 @@ CREATE TABLE IF NOT EXISTS coordinates (
     longitude NUMERIC(10, 6)         
 );
 """
+
+
