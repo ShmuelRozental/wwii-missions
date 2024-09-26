@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+instance/
+.env
+*.db
+
+venv/
+env/
+.env/
+
+# IDEs
+.vscode/
+.idea/
+
+
+*.log
