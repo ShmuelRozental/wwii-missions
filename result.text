@@ -2,57 +2,45 @@
 
 ## שאילתה 1: חישוב החיל האווירי הפעיל בשנה מסוימת
 - **שאילתה**:
-  SELECT city, COUNT(mission_id) AS active_missions
-  FROM mission
-  WHERE EXTRACT(YEAR FROM mission_date) = %s
-  GROUP BY city;
+WITH active_air_forces AS (
+    SELECT
+        m.air_force,
+        l.city,
+        COUNT(m.mission_id) AS active_missions
+    FROM mission m
+    JOIN target_details t ON m.target_id = t.target_id
+    JOIN location l ON t.location_id = l.location_id
+    WHERE EXTRACT(YEAR FROM m.mission_date) = 1944
+    GROUP BY m.air_force, l.city
+)
+
+SELECT
+    air_force,
+    city,
+    active_missions
+FROM active_air_forces
+ORDER BY active_missions DESC;
+
+
 
 ### ביצועים לפני האינדקסים:
-- **זמן ביצוע**: 150ms
+- **זמן ביצוע**: 302.611ms
 - **תוכנית ביצוע**:
   - סריקות טבלה מלאות (Seq Scan).
-  - כמות שורות שנסרקו: 10,000.
+  - כמות שורות שנסרקו:32,557.
 
 ### אינדקסים שנוצרו:
-- `CREATE INDEX idx_mission_year ON mission (EXTRACT(YEAR FROM mission_date));`
-- `CREATE INDEX idx_city ON mission (city);`
+CREATE INDEX idx_mission_date ON mission (mission_date);
+CREATE INDEX idx_target_id ON target_details (target_id);
+CREATE INDEX idx_location_id ON location (location_id);
 
 ### ביצועים אחרי האינדקסים:
-- **זמן ביצוע**: 25ms
+- **זמן ביצוע**: 280.301ms
 - **תוכנית ביצוע**:
-  - שימוש באינדקסים (Index Scan).
-  - כמות שורות שנסרקו: 1,000.
+  - שימוש באינדקסים ( Parallel Seq Scan + Index Scan).
+  - כמות שורות שנסרקו: 26,850.
 
 ---
 
-## שאילתה 2: חישוב ממוצע הערכת הנזק עבור משימות הפצצה
-- **שאילתה**:
-  SELECT country, AVG(bomb_damage_assessment) AS average_damage
-  FROM mission
-  WHERE number_of_aircraft > 5
-  GROUP BY country;
 
-### ביצועים לפני האינדקסים:
-- **זמן ביצוע**: 250ms
-- **תוכנית ביצוע**:
-  - סריקות טבלה מלאות (Seq Scan).
-  - כמות שורות שנסרקו: 15,000.
-
-### אינדקסים שנוצרו:
-- `CREATE INDEX idx_aircraft ON mission (number_of_aircraft);`
-- `CREATE INDEX idx_country ON mission (country);`
-
-### ביצועים אחרי האינדקסים:
-- **זמן ביצוע**: 40ms
-- **תוכנית ביצוע**:
-  - שימוש באינדקסים (Index Scan).
-  - כמות שורות שנסרקו: 2,500.
-
----
-
-## סיכום
-- **שיפורים ניכרים** בביצועים נרשמו לאחר יצירת האינדקסים.
-- **שאילתה 1** צמצמה את זמן הביצוע ב-83% לאחר הוספת אינדקסים.
-- **שאילתה 2** צמצמה את זמן הביצוע ב-84% לאחר הוספת אינדקסים.
-- האינדקסים שנבחרו שיפרו את ביצועי השאילתות משמעותית על ידי צמצום סריקות הטבלה והגברת היעילות של החיפושים.
 
